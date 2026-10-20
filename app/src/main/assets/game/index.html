@@ -78,11 +78,25 @@ const people=[
  {x:635,y:260,homeX:635,homeY:260,emoji:'🧑‍🌾',name:'Садовник',scared:0,alert:0,dir:1},
  {x:440,y:180,homeX:440,homeY:180,emoji:'👵',name:'Соседка',scared:0,alert:0,dir:-1},{x:520,y:350,homeX:520,homeY:350,emoji:'🧑',name:'Пикникер',scared:0,alert:0,dir:1}
 ];
-function resize(){dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.floor(innerWidth*dpr);canvas.height=Math.floor(innerHeight*dpr);canvas.style.width=innerWidth+'px';canvas.style.height=innerHeight+'px';const s=Math.min(innerWidth/W,innerHeight/H);scale=s;ox=(innerWidth-W*s)/2;oy=(innerHeight-H*s)/2}
+function resize(){dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.floor(innerWidth*dpr);canvas.height=Math.floor(innerHeight*dpr);canvas.style.width=innerWidth+'px';canvas.style.height=innerHeight+'px';ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';const s=Math.min(innerWidth/W,innerHeight/H);scale=s;ox=(innerWidth-W*s)/2;oy=(innerHeight-H*s)/2}
 window.addEventListener('resize',resize);resize();
 function rounded(x,y,w,h,r,fill,stroke){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=3;ctx.stroke()}}
 function text(t,x,y,size,align='center'){ctx.font='900 '+size+'px system-ui,sans-serif';ctx.textAlign=align;ctx.textBaseline='middle';ctx.fillStyle='#29432e';ctx.fillText(t,x+1,y+3);ctx.fillStyle='#fff8de';ctx.fillText(t,x,y)}
-function drawTree(x,y,s=1){ctx.fillStyle='#476b39';ctx.beginPath();ctx.ellipse(x,y+17*s,20*s,8*s,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#8a5c38';ctx.fillRect(x-4*s,y+1*s,8*s,24*s);for(const [dx,dy,r,c] of [[0,-12,18,'#3f8b4a'],[-12,-3,13,'#5aa85b'],[12,-3,13,'#367b42']]){ctx.beginPath();ctx.arc(x+dx*s,y+dy*s,r*s,0,Math.PI*2);ctx.fillStyle=c;ctx.fill()}}
+function drawTree(x,y,s=1){
+ // Soft contact shadow and layered canopy give the village a rounded 3D toy look.
+ ctx.save();ctx.shadowColor='#284a2b66';ctx.shadowBlur=13*s;ctx.shadowOffsetY=8*s;
+ ctx.fillStyle='#4b7542';ctx.beginPath();ctx.ellipse(x,y+19*s,25*s,10*s,0,0,Math.PI*2);ctx.fill();ctx.restore();
+ const trunk=ctx.createLinearGradient(x-5*s,y,x+6*s,y);trunk.addColorStop(0,'#80502f');trunk.addColorStop(.5,'#b87a45');trunk.addColorStop(1,'#70452b');
+ ctx.fillStyle=trunk;ctx.beginPath();ctx.roundRect(x-5*s,y-1*s,10*s,27*s,3*s);ctx.fill();
+ for(const [dx,dy,r,c1,c2] of [[0,-14,19,'#70c86b','#347e42'],[-13,-4,14,'#8bd779','#4a9a4d'],[13,-4,14,'#5bb65c','#2d713b'],[0,-2,13,'#72c968','#398744']]){
+  const gx=x+(dx-5)*s,gy=y+(dy-7)*s;
+  const g=ctx.createRadialGradient(gx,gy,2*s,x+dx*s,y+dy*s,r*s*1.3);
+  g.addColorStop(0,c1);g.addColorStop(1,c2);
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x+dx*s,y+dy*s,r*s,0,Math.PI*2);ctx.fill();
+ }
+ ctx.fillStyle='#ffffff24';ctx.beginPath();ctx.ellipse(x-5*s,y-15*s,6*s,3*s,-.6,0,Math.PI*2);ctx.fill();
+}
+
 function drawWorld(t){
  ctx.fillStyle='#8dcc70';ctx.fillRect(0,0,W,H);
  // grass speckles
@@ -106,10 +120,54 @@ function drawWorld(t){
  // signs
  rounded(485,300,77,40,8,'#f5dc9c','#705138');text('ДЕРЕВНЯ',523,320,10);
 }
-function drawThing(o){if(o.taken)return;ctx.beginPath();ctx.ellipse(o.x,o.y+8,15,6,0,0,Math.PI*2);ctx.fillStyle='#37613a55';ctx.fill();ctx.font='29px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(o.emoji,o.x,o.y)}
-function drawPerson(p,t){ctx.beginPath();ctx.ellipse(p.x,p.y+17,18,7,0,0,Math.PI*2);ctx.fillStyle='#3e643955';ctx.fill();ctx.font='31px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(p.emoji,p.x,p.y);if(p.scared>0){ctx.font='23px serif';ctx.fillText('😱',p.x+17,p.y-26)}else if(p.alert>0){ctx.font='20px serif';ctx.fillText('❗',p.x+18,p.y-26)}}
-function drawGoose(t){const x=goose.x,y=goose.y;ctx.beginPath();ctx.ellipse(x,y+13,20,8,0,0,Math.PI*2);ctx.fillStyle='#3e643955';ctx.fill();ctx.save();ctx.translate(x,y);if(goose.face<0)ctx.scale(-1,1);ctx.font='43px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(goose.carrying?'🪿':'🪿',0,0);ctx.font='19px serif';if(goose.carrying)ctx.fillText(goose.carrying.emoji,20,-15);if(goose.panic>0){ctx.font='16px serif';ctx.fillText('💨',-20,-23)}ctx.restore()}
-function render(t){ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.setTransform(dpr*scale,0,0,dpr*scale,dpr*ox,dpr*oy);drawWorld(t);things.forEach(drawThing);people.forEach(p=>drawPerson(p,t));drawGoose(t);if(goose.carrying){text('Неси '+goose.carrying.name,goose.x,goose.y-36,12)}}
+function drawThing(o){
+ if(o.taken)return;
+ // Grounding shadow + rounded, highlighted item silhouette.
+ ctx.save();ctx.fillStyle='#29472d55';ctx.beginPath();ctx.ellipse(o.x+2,o.y+10,17,7,0,0,Math.PI*2);ctx.fill();
+ ctx.shadowColor='#24452b55';ctx.shadowBlur=7;ctx.shadowOffsetY=3;
+ ctx.font='30px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(o.emoji,o.x,o.y-1);
+ ctx.shadowColor='transparent';ctx.font='11px system-ui';ctx.fillStyle='#fff8dc';ctx.strokeStyle='#36583a';ctx.lineWidth=2;
+ ctx.strokeText('',o.x,o.y);ctx.restore();
+}
+function drawPerson(p,t){
+ ctx.save();
+ ctx.fillStyle='#29472d55';ctx.beginPath();ctx.ellipse(p.x+2,p.y+18,19,8,0,0,Math.PI*2);ctx.fill();
+ ctx.shadowColor='#29472d55';ctx.shadowBlur=8;ctx.shadowOffsetY=4;
+ ctx.font='32px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(p.emoji,p.x,p.y-2);
+ ctx.shadowColor='transparent';
+ if(p.scared>0){ctx.font='22px serif';ctx.fillText('😱',p.x+18,p.y-28)}else if(p.alert>0){ctx.font='20px serif';ctx.fillText('❗',p.x+18,p.y-27)}
+ ctx.restore();
+}
+function drawGoose(t){
+ const x=goose.x,y=goose.y;
+ ctx.save();ctx.fillStyle='#29472d66';ctx.beginPath();ctx.ellipse(x+2,y+15,22,9,0,0,Math.PI*2);ctx.fill();
+ // Soft outline and shadow make the goose stand out from the ground.
+ ctx.shadowColor='#233e2a77';ctx.shadowBlur=10;ctx.shadowOffsetY=4;
+ ctx.translate(x,y);if(goose.face<0)ctx.scale(-1,1);
+ ctx.font='45px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('🪿',0,-2);
+ ctx.shadowColor='transparent';
+ if(goose.carrying){ctx.font='20px serif';ctx.fillText(goose.carrying.emoji,21,-17)}
+ if(goose.panic>0){ctx.font='16px serif';ctx.fillText('💨',-21,-24)}
+ ctx.restore();
+}
+
+function render(t){
+ ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);
+ ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+ ctx.setTransform(dpr*scale,0,0,dpr*scale,dpr*ox,dpr*oy);
+ drawWorld(t);
+ // Draw from back to front according to vertical position for a top-down depth effect.
+ const actors=[];
+ for(const o of things)if(!o.taken)actors.push({y:o.y,draw:()=>drawThing(o)});
+ for(const p of people)actors.push({y:p.y,draw:()=>drawPerson(p,t)});
+ actors.push({y:goose.y,draw:()=>drawGoose(t)});
+ actors.sort((a,b)=>a.y-b.y);for(const a of actors)a.draw();
+ if(goose.carrying){text('Неси '+goose.carrying.name,goose.x,goose.y-38,12)}
+ // Gentle daylight vignette adds depth without obscuring controls.
+ const g=ctx.createRadialGradient(W*.5,H*.42,90,W*.5,H*.48,620);
+ g.addColorStop(0,'#ffffff00');g.addColorStop(1,'#1c49220f');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+}
+
 function say(msg){ui.toast.textContent=msg;ui.toast.classList.add('show');toastTimer=2.1}
 function quest(el,done,label){el.className='quest'+(done?' done':'');el.textContent=(done?'✓ ':'○ ')+label}
 function saveGame(){try{localStorage.setItem('gooseWorldSave',JSON.stringify({apples,stars,gotApple,gotKey,keyFound,gotBread,honked,scaredNeighbor,goose:{x:goose.x,y:goose.y},things:things.map(o=>({id:o.id,taken:o.taken,rewarded:!!o.rewarded,x:o.x,y:o.y}))}))}catch(e){}}
