@@ -42,8 +42,8 @@ h1{margin:5px 0;font-size:clamp(27px,5vh,42px);letter-spacing:-1.5px}
 <body>
 <canvas id="game"></canvas>
 <div id="hud">
- <div class="panel"><div class="brand">🪿 Гусь на свободе!</div><div class="sub">Деревня • День 1</div><div id="stats">🍎 0 &nbsp; ⭐ 0</div></div>
- <div class="panel" id="questPanel"><div id="questTitle">📋 Гусиные проделки</div><div id="q1" class="quest">○ Украсть яблоко</div><div id="q2" class="quest">○ Напугать садовника</div><div id="q3" class="quest">○ Найти золотой ключ</div></div>
+ <div class="panel"><div class="brand">🪿 Гусь на свободе!</div><div class="sub">Тихая деревня • Утро</div><div id="stats">🍎 0 &nbsp; ⭐ 0</div></div>
+ <div class="panel" id="questPanel"><div id="questTitle">📋 Список проделок</div><div id="q1" class="quest">○ Утащить яблоко</div><div id="q2" class="quest">○ Спугнуть садовника</div><div id="q3" class="quest">○ Найти ключик</div><div id="q4" class="quest">○ Украсть багет</div><div id="q5" class="quest">○ Напугать соседку</div></div>
 </div>
 <div id="toast"></div>
 <div id="controls">
@@ -59,7 +59,7 @@ h1{margin:5px 0;font-size:clamp(27px,5vh,42px);letter-spacing:-1.5px}
  </div>
 </div>
 <div id="hint">WASD / стрелки — ходить • E — взять • Пробел — гакать</div>
-<div id="start"><div id="card"><div id="logo">🪿🍎</div><h1>Гусь на свободе!</h1><p>Ты — самый озорной гусь в деревне! Кради вкусности, пугай садовника и устраивай маленький переполох. Тут гусь задаёт правила.</p><button id="play">НАЧАТЬ ПРОДЕЛКИ!</button><div class="sub" style="margin-top:12px">Игра создана для Android • Можно играть офлайн</div></div></div>
+<div id="start"><div id="card"><div id="logo">🪿🍎</div><h1>Гусь на свободе!</h1><p>В деревне слишком тихо — пора это исправить! Утаскивай вещи, гогочи, отвлекай жителей и устраивай весёлый переполох.</p><button id="play">НАЧАТЬ ПРОДЕЛКИ!</button><div class="sub" style="margin-top:12px">Игра создана для Android • Можно играть офлайн</div></div></div>
 <script>
 (()=>{
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
