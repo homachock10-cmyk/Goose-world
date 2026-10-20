@@ -19,6 +19,21 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+      - name: Check game JavaScript syntax
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path("app/src/main/assets/game/index.html").read_text(encoding="utf-8")
+          scripts = re.findall(r"<script>(.*?)</script>", html, re.S)
+          if len(scripts) != 1:
+              raise SystemExit(f"Expected exactly one game script, found {len(scripts)}")
+          Path("/tmp/goose-game.js").write_text(scripts[0], encoding="utf-8")
+          print("Extracted game JavaScript for syntax validation.")
+          PY
+          node --check /tmp/goose-game.js
+      - name: Validate Android manifest XML
+        run: python3 -c "import xml.etree.ElementTree as ET; ET.parse('app/src/main/AndroidManifest.xml'); ET.parse('app/src/main/res/values/styles.xml'); print('Android XML files are valid.')"
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
       - name: Set up Gradle
