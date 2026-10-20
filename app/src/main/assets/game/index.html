@@ -64,7 +64,7 @@ h1{margin:5px 0;font-size:clamp(27px,5vh,42px);letter-spacing:-1.5px}
 (()=>{
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
 const ui={stats:document.getElementById('stats'),toast:document.getElementById('toast'),start:document.getElementById('start'),use:document.getElementById('use'),q1:document.getElementById('q1'),q2:document.getElementById('q2'),q3:document.getElementById('q3')};
-let W=960,H=540,scale=1,ox=0,oy=0,started=false,last=0,toastTimer=0;
+let W=960,H=540,scale=1,ox=0,oy=0,dpr=1,started=false,last=0,toastTimer=0;
 const keys={up:false,down:false,left:false,right:false};
 const goose={x:245,y:280,vx:0,vy:0,face:1,carrying:null,walk:0,panic:0};
 let apples=0,stars=0,honked=false,gotApple=false,gotKey=false,keyFound=false,completed=0;
@@ -78,7 +78,7 @@ const people=[
  {x:635,y:260,homeX:635,homeY:260,emoji:'🧑‍🌾',name:'Садовник',scared:0,alert:0,dir:1},
  {x:440,y:180,homeX:440,homeY:180,emoji:'👵',name:'Соседка',scared:0,alert:0,dir:-1}
 ];
-function resize(){const dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.floor(innerWidth*dpr);canvas.height=Math.floor(innerHeight*dpr);canvas.style.width=innerWidth+'px';canvas.style.height=innerHeight+'px';ctx.setTransform(dpr,0,0,dpr,0,0);const s=Math.min(innerWidth/W,innerHeight/H);scale=s;ox=(innerWidth-W*s)/2;oy=(innerHeight-H*s)/2}
+function resize(){dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.floor(innerWidth*dpr);canvas.height=Math.floor(innerHeight*dpr);canvas.style.width=innerWidth+'px';canvas.style.height=innerHeight+'px';const s=Math.min(innerWidth/W,innerHeight/H);scale=s;ox=(innerWidth-W*s)/2;oy=(innerHeight-H*s)/2}
 window.addEventListener('resize',resize);resize();
 function rounded(x,y,w,h,r,fill,stroke){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=3;ctx.stroke()}}
 function text(t,x,y,size,align='center'){ctx.font='900 '+size+'px system-ui,sans-serif';ctx.textAlign=align;ctx.textBaseline='middle';ctx.fillStyle='#29432e';ctx.fillText(t,x+1,y+3);ctx.fillStyle='#fff8de';ctx.fillText(t,x,y)}
@@ -109,7 +109,7 @@ function drawWorld(t){
 function drawThing(o){if(o.taken)return;ctx.beginPath();ctx.ellipse(o.x,o.y+8,15,6,0,0,Math.PI*2);ctx.fillStyle='#37613a55';ctx.fill();ctx.font='29px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(o.emoji,o.x,o.y)}
 function drawPerson(p,t){ctx.beginPath();ctx.ellipse(p.x,p.y+17,18,7,0,0,Math.PI*2);ctx.fillStyle='#3e643955';ctx.fill();ctx.font='31px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(p.emoji,p.x,p.y);if(p.scared>0){ctx.font='23px serif';ctx.fillText('😱',p.x+17,p.y-26)}else if(p.alert>0){ctx.font='20px serif';ctx.fillText('❗',p.x+18,p.y-26)}}
 function drawGoose(t){const x=goose.x,y=goose.y;ctx.beginPath();ctx.ellipse(x,y+13,20,8,0,0,Math.PI*2);ctx.fillStyle='#3e643955';ctx.fill();ctx.save();ctx.translate(x,y);if(goose.face<0)ctx.scale(-1,1);ctx.font='43px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(goose.carrying?'🪿':'🪿',0,0);ctx.font='19px serif';if(goose.carrying)ctx.fillText(goose.carrying.emoji,20,-15);if(goose.panic>0){ctx.font='16px serif';ctx.fillText('💨',-20,-23)}ctx.restore()}
-function render(t){ctx.setTransform(scale,0,0,scale,ox,oy);ctx.clearRect(0,0,W,H);drawWorld(t);things.forEach(drawThing);people.forEach(p=>drawPerson(p,t));drawGoose(t);if(goose.carrying){text('Неси '+goose.carrying.name,goose.x,goose.y-36,12)}}
+function render(t){ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.setTransform(dpr*scale,0,0,dpr*scale,dpr*ox,dpr*oy);drawWorld(t);things.forEach(drawThing);people.forEach(p=>drawPerson(p,t));drawGoose(t);if(goose.carrying){text('Неси '+goose.carrying.name,goose.x,goose.y-36,12)}}
 function say(msg){ui.toast.textContent=msg;ui.toast.classList.add('show');toastTimer=2.1}
 function quest(el,done,label){el.className='quest'+(done?' done':'');el.textContent=(done?'✓ ':'○ ')+label}
 function updateUI(){ui.stats.textContent='🍎 '+apples+'   ⭐ '+stars+'   🪿 '+(goose.carrying?'с добычей':'свободен');quest(ui.q1,gotApple,'Украсть яблоко');quest(ui.q2,honked,'Напугать садовника');quest(ui.q3,gotKey,'Найти золотой ключ');ui.use.innerHTML=(goose.carrying?'📦':'✋')+'<span>'+(goose.carrying?'Бросить':'Взять')+'</span>'}
